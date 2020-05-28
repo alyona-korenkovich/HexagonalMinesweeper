@@ -7,11 +7,18 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 public class Field {
-    final int tileSize = 40;
-    static Hex.Tile[][] grid;
-    static int fieldSize = 20;
-    static int bombsAmount = 50;
-    static int tilesLeft;
+
+    Hex.Tile[][] grid;
+    int fieldSize;
+    int bombsAmount;
+    int tilesLeft;
+    Menu m;
+
+    public Field(int fieldSize, int bombsAmount, Menu m) {
+        this.fieldSize = fieldSize;
+        this.bombsAmount = bombsAmount;
+        this.m = m;
+    }
 
     //creating a scene with a game
     public Pane createScene() {
@@ -22,8 +29,8 @@ public class Field {
 
         tilesLeft = fieldSize * fieldSize - bombsAmount;
 
-        final int W = tileSize * fieldSize + 40;
-        final int H = tileSize * (fieldSize + 1) + 70;
+        final int W = Hex.tileSize * fieldSize;
+        final int H = Hex.tileSize * (fieldSize + 1) + 30;
 
         Pane root = new Pane();
         root.setPrefSize(W, H);
@@ -31,7 +38,7 @@ public class Field {
 
         for (int y = 0; y < fieldSize; y++) {
             for (int x = 0; x < fieldSize; x++) {
-                Hex.Tile tile = new Hex.Tile(x, y, false);
+                Hex.Tile tile = new Hex.Tile(x, y, false, m, this);
                 grid[x][y] = tile;
             }
         }
@@ -52,7 +59,8 @@ public class Field {
                     continue;
                 }
 
-                long bombs = Hex.getNeighbors(tile).stream().filter(t -> t.hasBomb).count();
+                HexNeighbors hN = new HexNeighbors();
+                long bombs = hN.getNeighbors(this, tile).stream().filter(t -> t.hasBomb).count();
 
                 if (bombs > 0) {
                     tile.text.setText("" + bombs);
@@ -64,7 +72,7 @@ public class Field {
         bombsLeft.setText("Tiles left to open: " + tilesLeft);
         bombsLeft.setFont(Font.font("arial", FontWeight.SEMI_BOLD, FontPosture.ITALIC, 16));
         bombsLeft.setTranslateX(10);
-        bombsLeft.setTranslateY(tileSize * (fieldSize + 1));
+        bombsLeft.setTranslateY(Hex.tileSize * (fieldSize + 1));
 
         root.getChildren().add(bombsLeft);
         root.setOnMouseClicked(e -> bombsLeft.setText("Tiles left to open: " + tilesLeft));
